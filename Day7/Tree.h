@@ -50,7 +50,7 @@ class Tree {
             currentFolder->addItem(item);
             return true;
         }
-        
+
         void toRoot() {
             while(cdUp()) { }
         }
@@ -59,6 +59,15 @@ class Tree {
         void print() {
             qDebug() << "Printing file tree";
             qDebug().noquote() << currentFolder->info().join("\n");
+        }
+
+        QList<std::pair<TreeItem*, size_t>> sizeList() {
+            QList<std::pair<TreeItem*, size_t>> sizeList;
+            for(const auto item: currentFolder->contents())
+            {
+                sizeList.append({item, item->size()});
+            }
+            return sizeList;
         }
 
     private:

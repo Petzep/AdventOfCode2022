@@ -114,7 +114,34 @@ int main(int argc, char* argv[]) {
     tree->print();
 
     // Get file info
+    auto sizeList = tree->sizeList();
     
+    // Sort on size
+    std::sort(sizeList.begin(), sizeList.end(), [](const auto& a, const auto& b) { return a.second > b.second; });
+
+    // Print the directories with a size of at most 100000
+    size_t limit  = 100000;
+    size_t topSum = 0;
+    qDebug() << "\nFolders with at most a size of" << limit;
+    for(const auto& item: sizeList)
+    {
+        if(item.second <= limit)
+        {
+            topSum += item.second;
+            qDebug() << item.first->name() << " " << item.second;
+
+            // Also add all items in the folder
+            if(Folder* folder = dynamic_cast<Folder*>(item.first); folder != nullptr)
+            {
+                for(const auto subItem: folder->contents())
+                {
+                    topSum += subItem->size();
+                }
+            }
+        }
+    }
+
+    qDebug() << "-----------------\nSum size:" << topSum;
 
     return 0;
 }

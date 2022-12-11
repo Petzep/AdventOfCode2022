@@ -73,6 +73,13 @@ class Folder : public TreeItem {
                 auto itemInfo = item->info().join("\n  ");
                 contentList.append(QString("  %1").arg(itemInfo));
             }
+            
+            // There is nothing to join when we have one content, that's why we need to add a manual identation
+            if(contents().size() == 1)
+            {
+                contentList.last().prepend("  ");
+            }
+            
             return contentList;
          }
 
