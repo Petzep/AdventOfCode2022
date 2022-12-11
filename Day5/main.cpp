@@ -4,8 +4,8 @@
 
 int main(int argc, char* argv[]) {
     // Get input file
-    //QFile inputFile = QFile("input.txt");
-    QFile inputFile = QFile("testInput.txt");
+    QFile inputFile = QFile("input.txt");
+    //QFile inputFile = QFile("testInput.txt");
     if(!inputFile.open(QFile::OpenModeFlag::ReadOnly | QFile::OpenModeFlag::Text))
     {
         qDebug() << "Could not open file";
@@ -116,12 +116,19 @@ int main(int argc, char* argv[]) {
     
 #ifdef part_2
         // Move the stacks as a whole
+        QList<QChar> tempStack;
         for(int i = 0; i < amount; i++)
         {
             QChar topElement = stacks[startStack - 1].takeFirst();
 
             // Place the top element
-            stacks[endStack - 1].append(topElement);
+            tempStack.prepend(topElement);
+        }
+
+        // Add tempstack to stack
+        for(int i = 0; i < amount; i++)
+        {
+            stacks[endStack - 1].prepend(tempStack[i]);
         }
 #else
         // Move the stacks
