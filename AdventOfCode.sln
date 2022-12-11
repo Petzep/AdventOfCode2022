@@ -15,6 +15,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Day5", "Day5\Day5.vcxproj",
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Day6", "Day6\Day6.vcxproj", "{C73EAC15-04CC-4ED1-97BB-66D1758D8492}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Day7", "Day7\Day7.vcxproj", "{7BE691C5-8613-4BFA-88B7-80459176A521}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -45,6 +47,10 @@ Global
 		{C73EAC15-04CC-4ED1-97BB-66D1758D8492}.Debug|x64.Build.0 = Debug|x64
 		{C73EAC15-04CC-4ED1-97BB-66D1758D8492}.Release|x64.ActiveCfg = Release|x64
 		{C73EAC15-04CC-4ED1-97BB-66D1758D8492}.Release|x64.Build.0 = Release|x64
+		{7BE691C5-8613-4BFA-88B7-80459176A521}.Debug|x64.ActiveCfg = Debug|x64
+		{7BE691C5-8613-4BFA-88B7-80459176A521}.Debug|x64.Build.0 = Debug|x64
+		{7BE691C5-8613-4BFA-88B7-80459176A521}.Release|x64.ActiveCfg = Release|x64
+		{7BE691C5-8613-4BFA-88B7-80459176A521}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
