@@ -34,6 +34,8 @@ class Tree {
                     }
                 }
             }
+
+            return false;
         }
 
         bool addItem(TreeItem* item) {
@@ -62,12 +64,41 @@ class Tree {
         }
 
         QList<std::pair<TreeItem*, size_t>> sizeList() {
-            QList<std::pair<TreeItem*, size_t>> sizeList;
+            QList<std::pair<TreeItem*, size_t>> list;
+            for(const auto& item: itemList())
+            {
+                list.append({item, item->size()});
+            }
+
+            // Sort on size
+            std::sort(list.begin(), list.end(), [](const auto& a, const auto& b) { return a.second > b.second; });
+            return list;
+        }
+
+        QList<TreeItem*> itemList(){
+            // Start with the current folder
+            QList<TreeItem*> list = {currentFolder};
+
+            // Work down from there
             for(const auto item: currentFolder->contents())
             {
-                sizeList.append({item, item->size()});
+                // Append the folders
+                if(Folder* folder = dynamic_cast<Folder*>(item); folder != nullptr)
+                {                   
+                    // Recursively add it's contents
+                    auto current = currentFolder;
+                    cd(folder->name());
+                    list.append(itemList());
+                    cdUp();
+                }
+                else
+                {
+                    // Append the item
+                    list.append(item);
+                }
             }
-            return sizeList;
+
+            return list;
         }
 
     private:

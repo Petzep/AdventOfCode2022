@@ -3,8 +3,8 @@
 
 int main(int argc, char* argv[]) {
     // Get input file
-    //QFile inputFile = QFile("input.txt");
-    QFile inputFile = QFile("testInput.txt");
+     QFile inputFile = QFile("input.txt");
+    //QFile inputFile = QFile("testInput.txt");
     if(!inputFile.open(QFile::OpenModeFlag::ReadOnly | QFile::OpenModeFlag::Text))
     {
         qDebug() << "Could not open file";
@@ -113,31 +113,21 @@ int main(int argc, char* argv[]) {
     tree->toRoot();
     tree->print();
 
-    // Get file info
-    auto sizeList = tree->sizeList();
-    
-    // Sort on size
-    std::sort(sizeList.begin(), sizeList.end(), [](const auto& a, const auto& b) { return a.second > b.second; });
+    // Get item list
+    auto itemList = tree->itemList();
 
     // Print the directories with a size of at most 100000
     size_t limit  = 100000;
     size_t topSum = 0;
     qDebug() << "\nFolders with at most a size of" << limit;
-    for(const auto& item: sizeList)
+    for(const auto& item: itemList)
     {
-        if(item.second <= limit)
+        // Only list folders
+        if(Folder* folder = dynamic_cast<Folder*>(item); folder != nullptr && folder->size() <= limit)
         {
-            topSum += item.second;
-            qDebug() << item.first->name() << " " << item.second;
+            topSum += folder->size();
 
-            // Also add all items in the folder
-            if(Folder* folder = dynamic_cast<Folder*>(item.first); folder != nullptr)
-            {
-                for(const auto subItem: folder->contents())
-                {
-                    topSum += subItem->size();
-                }
-            }
+            qDebug() << folder->name() << "with size" << folder->size();
         }
     }
 
