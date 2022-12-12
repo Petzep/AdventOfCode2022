@@ -3,7 +3,7 @@
 
 int main(int argc, char* argv[]) {
     // Get input file
-     QFile inputFile = QFile("input.txt");
+    QFile inputFile = QFile("input.txt");
     //QFile inputFile = QFile("testInput.txt");
     if(!inputFile.open(QFile::OpenModeFlag::ReadOnly | QFile::OpenModeFlag::Text))
     {
@@ -133,5 +133,35 @@ int main(int argc, char* argv[]) {
 
     qDebug() << "-----------------\nSum size:" << topSum;
 
+    // Find the folder we need to delete
+    size_t totalDiskSpace = 70000000;
+    size_t freeSpaceNeeded = 30000000;
+    
+    tree->toRoot();
+    size_t freeSpace = totalDiskSpace - tree->currentFolder()->size();
+    size_t deletionSize = freeSpaceNeeded - freeSpace;
+    
+    // Print info
+    qDebug() << "\n\nDisk information:\n----------------";
+    qDebug() << "Total disk space:" << totalDiskSpace;
+    qDebug() << "Free space:" << freeSpace;
+    qDebug() << "We need to delete a folder with at least" << deletionSize << "free space";
+
+    // Find the folder we need to delete
+    QList<Folder*> deletionCandidates;
+    for(const auto& item: itemList)
+    {
+        // Only list folders
+        if(Folder* folder = dynamic_cast<Folder*>(item); folder != nullptr && folder->size() >= deletionSize)
+        {
+            deletionCandidates.append(folder);
+        }
+    }
+
+    // Find the smallest folder that would work
+    std::sort(deletionCandidates.begin(), deletionCandidates.end(), [](Folder* a, Folder* b) { return a->size() < b->size(); });
+    qDebug() << "We need to delete:" << deletionCandidates.first()->name() << "with size:" << deletionCandidates.first()->size();
+    
+    
     return 0;
 }

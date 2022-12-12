@@ -5,11 +5,11 @@
 class Tree {
     public:
         Tree(Folder* folder)
-              : currentFolder(folder) { }
+              : m_currentFolder(folder) { }
 
         bool cdUp() {
             // Check what's above
-            auto upFolder = currentFolder->parent();
+            auto upFolder = m_currentFolder->parent();
 
             // Check if we are no root
             if(upFolder == nullptr)
@@ -18,18 +18,18 @@ class Tree {
             }
 
             // Go up
-            currentFolder = upFolder;
+            m_currentFolder = upFolder;
             return true;
         }
 
         bool cd(QString directory) {
-            for(const auto item: currentFolder->contents())
+            for(const auto item: m_currentFolder->contents())
             {
                 if(Folder* folder = dynamic_cast<Folder*>(item); folder != nullptr)
                 {
                     if(item->name() == directory)
                     {
-                        currentFolder = folder;
+                        m_currentFolder = folder;
                         return true;
                     }
                 }
@@ -40,7 +40,7 @@ class Tree {
 
         bool addItem(TreeItem* item) {
             // Check if we have a file with the same name
-            for(const auto existingItem: currentFolder->contents())
+            for(const auto existingItem: m_currentFolder->contents())
             {
                 if(existingItem->name() == item->name())
                 {
@@ -49,7 +49,7 @@ class Tree {
             }
 
             // Add the item
-            currentFolder->addItem(item);
+            m_currentFolder->addItem(item);
             return true;
         }
 
@@ -58,12 +58,12 @@ class Tree {
         }
 
         // Print the file tree
-        void print() {
+        void print() const {
             qDebug() << "Printing file tree";
-            qDebug().noquote() << currentFolder->info().join("\n");
+            qDebug().noquote() << m_currentFolder->info().join("\n");
         }
 
-        QList<std::pair<TreeItem*, size_t>> sizeList() {
+        QList<std::pair<TreeItem*, size_t>> sizeList() const {
             QList<std::pair<TreeItem*, size_t>> list;
             for(const auto& item: itemList())
             {
@@ -75,21 +75,21 @@ class Tree {
             return list;
         }
 
-        QList<TreeItem*> itemList(){
+        QList<TreeItem*> itemList() const {
             // Start with the current folder
-            QList<TreeItem*> list = {currentFolder};
+            QList<TreeItem*> list = {m_currentFolder};
 
             // Work down from there
-            for(const auto item: currentFolder->contents())
+            for(const auto item: m_currentFolder->contents())
             {
                 // Append the folders
                 if(Folder* folder = dynamic_cast<Folder*>(item); folder != nullptr)
-                {                   
+                {
+                    // Create a temporary copy to ensure constness
+                    auto tempTree = Tree(folder);
+                    
                     // Recursively add it's contents
-                    auto current = currentFolder;
-                    cd(folder->name());
-                    list.append(itemList());
-                    cdUp();
+                    list.append(tempTree.itemList());
                 }
                 else
                 {
@@ -101,6 +101,10 @@ class Tree {
             return list;
         }
 
+        Folder* currentFolder() const {
+            return m_currentFolder;
+        }
+
     private:
-        Folder* currentFolder = nullptr;
+        Folder* m_currentFolder = nullptr;
 };
