@@ -19,23 +19,71 @@ class CPU {
                 signalStrength += PC * accumulator;
             }
 
+            pulse();
+
             // Increase PC
             PC++;
+
+            // Increase beam
+            beam++;
+            if(beam == screen.end())
+            {
+                beam = screen.begin();
+            }
+        }
+
+        void pulse() {
+            int beamPosition = std::distance(screen.begin(), beam) % screenW;
+            int spriteOfset  = (spritLength / 2);
+            if(abs(accumulator - beamPosition) <= spriteOfset)
+            {
+                *beam = true;
+            }
+            else
+            {
+                *beam = false;
+            }
         }
 
         int getSignal() {
             return signalStrength;
         }
 
+        void printScreen() {
+            for(int y = 0; y < screenH; y++)
+            {
+                QString scanline;
+                for(int x = 0; x < screenW; x++)
+                {
+                    if(screen[y * screenW + x])
+                    {
+                        scanline.append("#");
+                    }
+                    else
+                    {
+                        scanline.append(".");
+                    }
+                }
+                qDebug().noquote() << scanline;
+            }
+        }
+
     private:
-        int PC             = 1;
-        int accumulator    = 1;
-        int signalStrength = 0;
+        int                   PC             = 1;
+        int                   accumulator    = 1;
+        int                   signalStrength = 0;
+        const int             spritLength    = 3;
+
+        const int             screenW        = 40;
+        const int             screenH        = 6;
+
+        QList<bool>           screen         = QList<bool>(screenH * screenW, false);
+        QList<bool>::iterator beam           = screen.begin();
 };
 
 int main(int argc, char* argv[]) {
     // Get input file
-    QFile inputFile = QFile("input.txt");
+     QFile inputFile = QFile("input.txt");
     //QFile inputFile = QFile("testInput.txt");
     if(!inputFile.open(QFile::OpenModeFlag::ReadOnly | QFile::OpenModeFlag::Text))
     {
@@ -47,7 +95,6 @@ int main(int argc, char* argv[]) {
     auto PC = CPU();
 
     // Parse instructions
-    // Basically we're gonna make a cpu
     while(!inputFile.atEnd())
     {
         QString instruction = inputFile.readLine().trimmed();
@@ -86,6 +133,8 @@ int main(int argc, char* argv[]) {
 
     // Print results
     qDebug() << "Signal strength:" << PC.getSignal();
+
+    PC.printScreen();
 
     return 0;
 }
