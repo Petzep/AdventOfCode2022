@@ -29,10 +29,16 @@
     <Text Include="testInput.txt">
       <Filter>Resource Files</Filter>
     </Text>
+    <Text Include="testInput2.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+    <Text Include="testInput3.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp">
+    <QtMoc Include="main.cpp">
       <Filter>Source Files</Filter>
-    </ClCompile>
+    </QtMoc>
   </ItemGroup>
 </Project>
