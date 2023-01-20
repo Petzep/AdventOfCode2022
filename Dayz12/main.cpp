@@ -71,7 +71,7 @@ class ForestMap {
         // A* finds a path from start to goal.
         // Based on pseudo code of: https://en.wikipedia.org/wiki/A*_search_algorithm
         int findPath(uint8_t goalElevation = -1) {
-            uint8_t highestElevation = 0; 
+            uint8_t limitElevation = 0;
             // The set of discovered nodes that may need to be (re-)expanded.
             // Initially, only the start node is known.
             // This is usually implemented as a min-heap or priority queue rather than a hash-set.
@@ -104,45 +104,29 @@ class ForestMap {
                     return costToGoal(a) < costToGoal(b);
                 });
 
-                auto current = openList.takeFirst();
+                auto current = openList.takeLast();
                 if(current == m_endLocation)
                 {
                     m_path = reconstructPath(current, cameFrom);
                     return m_map[m_endLocation.y()][m_endLocation.x()];
                 }
-                else if (m_map[current.y()][current.x()] == goalElevation)
+                else if(m_map[current.y()][current.x()] == goalElevation)
                 {
                     m_path = reconstructPath(current, cameFrom);
-                    return goalElevation; 
+                    return goalElevation;
                 }
 
-                highestElevation = std::max(highestElevation, m_map[current.y()][current.x()]);
+                if(goalElevation > m_map[m_startLocation.y()][m_startLocation.x()])
+                {
+                    limitElevation = std::max(limitElevation, m_map[current.y()][current.x()]);
+                }
+                else
+                {
+                    limitElevation = std::min(limitElevation, m_map[current.y()][current.x()]);
+                }
+
                 // Search neighbors
-                QList<QPoint> neighbors = QList<QPoint>();
-
-                // Top neighbor
-                if(current.y() > 0 && std::abs(m_map[current.y() - 1][current.x()] - m_map[current.y()][current.x()]) <= 1)
-                {
-                    neighbors.append({current.x(), current.y() - 1});
-                }
-
-                // Bottom neighbor
-                if(current.y() < m_y - 1 && std::abs(m_map[current.y() + 1][current.x()] - m_map[current.y()][current.x()]) <= 1)
-                {
-                    neighbors.append({current.x(), current.y() + 1});
-                }
-
-                // Left neighbor
-                if(current.x() > 0 && std::abs(m_map[current.y()][current.x() - 1] - m_map[current.y()][current.x()]) <= 1)
-                {
-                    neighbors.append({current.x() - 1, current.y()});
-                }
-
-                // Right neighbor
-                if(current.x() < m_x - 1 && std::abs(m_map[current.y()][current.x() + 1] - m_map[current.y()][current.x()]) <= 1)
-                {
-                    neighbors.append({current.x() + 1, current.y()});
-                }
+                QList<QPoint> neighbors = findNeighbours(current);
 
                 // Debug
                 /*qDebug() << QString("Current(x:%1,y:%2) - Neighbors: %3").arg(current.x()).arg(current.y()).arg(neighbors.size());
@@ -183,7 +167,25 @@ class ForestMap {
 
             // Open set is empty but goal was never reached
             // No path found, return highest elevation
-            return findPath(highestElevation);
+            return findPath(limitElevation);
+        }
+
+        int findPathStart() {
+            QList<int> elevationMap;
+
+            // I'm to lazy, there is a stroke of b elevation at the second column, meaning. All possible candidates are in the first column. Lets go from there.
+            for(int y = 0; y < m_y; y++)
+            {
+                m_startLocation.setY(y);
+                m_path.clear();
+
+                // Looking at the map, there is always a path possible. Trust in my code and go
+                findPath();
+                elevationMap.append(m_path.count());
+            }
+
+            // Find the minimum
+            return std::ranges::min(elevationMap);
         }
 
         QPoint startLocation() const {
@@ -223,7 +225,7 @@ class ForestMap {
                     }
                     else
                     {
-                        if(costTo({x,y}, path.first()) < 5)
+                        if(costTo({x, y}, path.first()) < 5)
                         {
                             line.append((char)('a' + m_map[y][x]));
                         }
@@ -280,19 +282,53 @@ class ForestMap {
         }
 
         double costTo(QPoint current, QPoint target) const {
+            // Manhattan distance (no height)
+            // auto diffPoint = target - current;
+            // return sqrt(pow(diffPoint.manhattanLength(), 2) + pow(diffPoint.manhattanLength(), 2));
+
             // Manhattan distance
-            auto diffPoint = target - current;
-            return sqrt(pow(diffPoint.manhattanLength(), 2) + pow(diffPoint.manhattanLength(), 2) + pow(m_map[target.y()][target.x()] - m_map[current.y()][current.x()], 2));
+            // auto diffPoint = target - current;
+            // return sqrt(pow(diffPoint.manhattanLength(), 2) + pow(diffPoint.manhattanLength(), 2) + pow(m_map[target.y()][target.x()] - m_map[current.y()][current.x()], 2));
 
             // Height as difference
             // return m_map[target.y()][target.x()] - m_map[current.y()][current.x()];
 
             // Pythagorean distance
-            // return sqrt(pow(target.x() - current.x(), 2) + pow(target.y() - current.y(), 2) + pow(m_map[target.y()][target.x()] - m_map[current.y()][current.x()], 2));
+            return sqrt(pow(target.x() - current.x(), 2) + pow(target.y() - current.y(), 2) + pow(m_map[target.y()][target.x()] - m_map[current.y()][current.x()], 2));
         }
 
         double costToGoal(QPoint current) const {
             return costTo(current, m_endLocation);
+        }
+
+        QList<QPoint> findNeighbours(QPoint current) {
+            QList<QPoint> neighbors = QList<QPoint>();
+
+            // Top neighbor
+            if(current.y() > 0 && (m_map[current.y() - 1][current.x()] - m_map[current.y()][current.x()]) <= 1)
+            {
+                neighbors.append({current.x(), current.y() - 1});
+            }
+
+            // Bottom neighbor
+            if(current.y() < m_y - 1 && (m_map[current.y() + 1][current.x()] - m_map[current.y()][current.x()]) <= 1)
+            {
+                neighbors.append({current.x(), current.y() + 1});
+            }
+
+            // Left neighbor
+            if(current.x() > 0 && (m_map[current.y()][current.x() - 1] - m_map[current.y()][current.x()]) <= 1)
+            {
+                neighbors.append({current.x() - 1, current.y()});
+            }
+
+            // Right neighbor
+            if(current.x() < m_x - 1 && (m_map[current.y()][current.x() + 1] - m_map[current.y()][current.x()]) <= 1)
+            {
+                neighbors.append({current.x() + 1, current.y()});
+            }
+
+            return neighbors;
         }
 };
 
@@ -319,13 +355,14 @@ int main(int argc, char* argv[]) {
     qDebug() << "Start location:" << forest->startLocation();
     qDebug() << "End location:" << forest->endLocation();
 
+    // Part 1
     if(forest->findPath())
     {
         qDebug() << "Found path!";
         auto foundPath = forest->path();
-        
+
         // Check if the found path leads to the end
-        if (foundPath.last() == forest->endLocation())
+        if(foundPath.first() == forest->endLocation())
         {
             qDebug() << "Found lead to the end!";
         }
@@ -336,7 +373,7 @@ int main(int argc, char* argv[]) {
         {
             pathList.append(QString("(%1,%2)").arg(point.x()).arg(point.y()));
         }
-        qDebug() << pathList.join(" -> ");
+        // qDebug() << pathList.join(" -> ");
 
         qDebug() << "Steps to take:" << forest->path().size() - 1;
     }
@@ -344,6 +381,12 @@ int main(int argc, char* argv[]) {
     {
         qDebug() << "No path found :-(";
     }
+
+    // Part 2
+    // Ballsy, no checking here!
+    qDebug() << "Finding shortest path!";
+    qDebug() << "Steps to take:" << forest->findPathStart() - 1;
+
 
     return 0;
 }
