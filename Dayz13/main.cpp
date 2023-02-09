@@ -41,6 +41,7 @@ QVariantList extractPayload(QString input) {
     // Extract payload recursively
     int first = -1;
     int index = -1;
+    int nestedCount = 0;
     for(const auto& character: input)
     {
         index++;
@@ -48,8 +49,20 @@ QVariantList extractPayload(QString input) {
         // This is an array, so search for the end
         if(first >= 0)
         {
-            if(character == ']')
+            // Count inner blocks
+            if(character == '[')
             {
+                nestedCount++;
+            }
+            else if(character == ']')
+            {
+                // This is inner, go to the next
+                if(!--nestedCount)
+                {
+                    continue;
+                }
+
+                // Capture the outer most block
                 if(index - first == 1)
                 {
                     // Add empty package
