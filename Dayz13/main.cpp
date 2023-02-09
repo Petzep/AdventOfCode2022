@@ -101,6 +101,10 @@ QVariantList extractPayload(QString input) {
                 {
                     packet.append(QVariant::fromValue<int>(character.toLatin1() - '0'));
                 }
+                else if(character == 'A')
+                {
+                    packet.append(QVariant::fromValue<int>(10));
+                }
                 else if(character != ']')
                 {
                     qDebug() << "Invalid character: " << character;
@@ -112,7 +116,7 @@ QVariantList extractPayload(QString input) {
     return packet;
 }
 
-inline int evaluateNumber(int a, int b) { 
+inline int evaluateNumber(int a, int b) {
     // The A should be smaller or equal
     if(a < b)
     {
@@ -187,6 +191,22 @@ int checkPacket(QVariant packA, QVariant packB) {
     }
 }
 
+// Bubblesort for QVariantList
+void bubbleSort(QVariantList& list) {
+    for(int i = 0; i < list.size(); i++)
+    {
+        for(int j = 0; j < list.size() - i - 1; j++)
+        {
+            if(checkPacket(list[j], list[j + 1]) == -1)
+            {
+                auto temp   = list[j];
+                list[j]     = list[j + 1];
+                list[j + 1] = temp;
+            }
+        }
+    }
+}
+
 int main(int argc, char* argv[]) {
     // Get input file
     // QFile inputFile = QFile("input.txt");
@@ -201,10 +221,10 @@ int main(int argc, char* argv[]) {
     QVariantList packetList;
     while(!inputFile.atEnd())
     {
-        QString line = inputFile.readLine().trimmed();
+        // I can't deal with the 10, so we'll parse it as an hex-ish
+        QString line = inputFile.readLine().trimmed().replace("10", "A");
         if(line == "")
         {
-            // TODO: take first pair, second pair
             continue;
         }
 
@@ -251,8 +271,39 @@ int main(int argc, char* argv[]) {
         qDebug().noquote() << QString("Packet: %1\nPacket: %2\nCorrect: %3\n").arg(packetString1).arg(packetString2).arg(correct ? "Yes" : "No");
     }
 
-    auto indiciesSum = std::accumulate(correctIndicies.begin(), correctIndicies.end(), 0);
+    int indiciesSum = std::accumulate(correctIndicies.begin(), correctIndicies.end(), 0);
     qDebug() << "Sum of the indices" << indiciesSum;
+
+    // Add driver packets
+    QList<QString> driverPacketLines = {"[2]", "[6]"};
+    for(auto packetLine: driverPacketLines)
+    {
+        packetList.append(QVariant());
+        packetList[packetList.size() - 1] = extractPayload(packetLine);
+    }
+
+    // Sort list
+    bubbleSort(packetList);
+
+    // Print lists
+    QList<int> driverIndex;
+    for(int i = 0; i < packetList.size(); i++)
+    {
+        QString packetString = packetToString(packetList[i]);
+        if(std::any_of(driverPacketLines.constBegin(), driverPacketLines.constEnd(), [packetString](QString driverPacketLine) {
+               return packetString == "[" + driverPacketLine + "]";
+           }))
+        {
+            packetString.prepend("DRIVER: ");
+            driverIndex.append(i + 1);
+        }
+
+        qDebug().noquote() << packetString;
+    }
+
+    // Decoder key
+    int decoderKey = std::accumulate(driverIndex.begin(), driverIndex.end(), 1, std::multiplies<int>());
+    qDebug().noquote() << "Decoder key: " << decoderKey;
 
     return 0;
 }

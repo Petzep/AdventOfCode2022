@@ -90,6 +90,7 @@
   <ItemGroup>
     <Text Include="input.txt" />
     <Text Include="testInput.txt" />
+    <Text Include="testInput2.txt" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
