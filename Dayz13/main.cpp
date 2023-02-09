@@ -57,8 +57,9 @@ QVariantList extractPayload(QString input) {
             else if(character == ']')
             {
                 // This is inner, go to the next
-                if(!--nestedCount)
+                if(nestedCount > 0)
                 {
+                    nestedCount--;
                     continue;
                 }
 
