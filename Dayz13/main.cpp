@@ -34,13 +34,12 @@ QString packetToString(QVariant packet) {
     return output;
 }
 
-
 QVariantList extractPayload(QString input) {
     QVariantList packet;
 
     // Extract payload recursively
-    int first = -1;
-    int index = -1;
+    int first       = -1;
+    int index       = -1;
     int nestedCount = 0;
     for(const auto& character: input)
     {
@@ -113,6 +112,25 @@ QVariantList extractPayload(QString input) {
     return packet;
 }
 
+inline int evaluateNumber(int a, int b) { 
+    // The A should be smaller or equal
+    if(a < b)
+    {
+        // Correct
+        return 1;
+    }
+    else if(a > b)
+    {
+        // Incorrect
+        return -1;
+    }
+    else
+    {
+        // Indecisive
+        return 0;
+    }
+}
+
 int checkPacket(QVariant packA, QVariant packB) {
     auto test1 = packetToString(packA);
     auto test2 = packetToString(packB);
@@ -120,22 +138,7 @@ int checkPacket(QVariant packA, QVariant packB) {
     // If both values are integers
     if(packA.type() == QVariant::Int && packB.type() == QVariant::Int)
     {
-        // The A should be smaller or equal
-        if(packA.toInt() < packB.toInt())
-        {
-            // Correct
-            return 1;
-        }
-        else if(packA.toInt() > packB.toInt())
-        {
-            // Incorrect
-            return -1;
-        }
-        else
-        {
-            // Indecisive
-            return 0;
-        }
+        return evaluateNumber(packA.toInt(), packB.toInt());
     }
 
     // If both values are list, compare them element wise
@@ -160,7 +163,7 @@ int checkPacket(QVariant packA, QVariant packB) {
         }
 
         // If the A is shorter, it's good
-        return listA.size() <= listB.size();
+        return evaluateNumber(listA.size(), listB.size());
     }
 
     // If exactly one of them is an integer
@@ -229,13 +232,27 @@ int main(int argc, char* argv[]) {
     }
 
     // Check and print packages
+    QList<int> correctIndicies;
     for(int i = 0; i < packetList.size(); i += 2)
     {
         bool    correct       = checkPacket(packetList[i], packetList[i + 1]) == 1;
         QString packetString1 = packetToString(packetList[i]);
         QString packetString2 = packetToString(packetList[i + 1]);
+        int     pairNumber    = 1 + (i / 2);
+
+        // Count the correct indices
+        if(correct)
+        {
+            correctIndicies.append(pairNumber);
+        }
+
+        // Print the packages
+        qDebug().noquote() << "== Pair" << pairNumber << "==";
         qDebug().noquote() << QString("Packet: %1\nPacket: %2\nCorrect: %3\n").arg(packetString1).arg(packetString2).arg(correct ? "Yes" : "No");
     }
+
+    auto indiciesSum = std::accumulate(correctIndicies.begin(), correctIndicies.end(), 0);
+    qDebug() << "Sum of the indices" << indiciesSum;
 
     return 0;
 }
