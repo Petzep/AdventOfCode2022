@@ -29,6 +29,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Dayz12", "Dayz12\Dayz12.vcx
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Dayz13", "Dayz13\Dayz13.vcxproj", "{A04C0DA4-41BE-41F5-A855-E9DC906DC6A6}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Dayz14", "Dayz14\Dayz14.vcxproj", "{3EA326D2-E539-4818-98E3-450F85399244}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -87,6 +89,10 @@ Global
 		{A04C0DA4-41BE-41F5-A855-E9DC906DC6A6}.Debug|x64.Build.0 = Debug|x64
 		{A04C0DA4-41BE-41F5-A855-E9DC906DC6A6}.Release|x64.ActiveCfg = Release|x64
 		{A04C0DA4-41BE-41F5-A855-E9DC906DC6A6}.Release|x64.Build.0 = Release|x64
+		{3EA326D2-E539-4818-98E3-450F85399244}.Debug|x64.ActiveCfg = Debug|x64
+		{3EA326D2-E539-4818-98E3-450F85399244}.Debug|x64.Build.0 = Debug|x64
+		{3EA326D2-E539-4818-98E3-450F85399244}.Release|x64.ActiveCfg = Release|x64
+		{3EA326D2-E539-4818-98E3-450F85399244}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
