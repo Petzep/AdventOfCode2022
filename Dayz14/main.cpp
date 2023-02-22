@@ -203,8 +203,8 @@ void drawMap(Map map) {
 
 int main(int argc, char* argv[]) {
     // Get input file
-    // QFile inputFile = QFile("input.txt");
-    QFile inputFile = QFile("testInput.txt");
+     QFile inputFile = QFile("input.txt");
+    //QFile inputFile = QFile("testInput.txt");
     if(!inputFile.open(QFile::OpenModeFlag::ReadOnly | QFile::OpenModeFlag::Text))
     {
         qDebug() << "Could not open file";
