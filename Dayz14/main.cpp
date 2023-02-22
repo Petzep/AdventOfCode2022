@@ -4,38 +4,125 @@
 #include <QtCore>
 #include <QtMath>
 
-void drawMap(QList<QPolygon> rockFormations, QPoint start) {
+struct Map {
+        QPoint             start;
+        QRect              field;
+        QList<QList<char>> mapData;
+
+        // Calculating functions
+        int maxSteps() const {
+            return QPoint(field.width(), field.height()).manhattanLength();
+        }
+};
+
+bool placeRock(Map& map, QPoint rock, bool testOnly = false) {
+    auto& mapData = map.mapData;
+    auto& field   = map.field;
+
+    // Sanity check
+    if(!field.contains(rock))
+    {
+        if(!testOnly)
+        {
+            qWarning() << "Rock falls of map!";
+            return true;
+        }
+    }
+
+    auto& current = mapData[rock.y() - field.y()][rock.x() - field.x()];
+
+    if(current == '#')
+    {
+        if(!testOnly)
+        {
+            qWarning() << "Rock placed on top of a wall!";
+            mapData[rock.y() - field.y()][rock.x() - field.x()] = '$';
+        }
+        return false;
+    }
+    else if(current == 'O')
+    {
+        if(!testOnly)
+        {
+            qWarning() << "Rock placed on top of a rock!";
+            mapData[rock.y() - field.y()][rock.x() - field.x()] = '8';
+        }
+        return false;
+    }
+    else
+    {
+        if(!testOnly)
+        {
+            mapData[rock.y() - field.y()][rock.x() - field.x()] = 'O';
+        }
+        return true;
+    }
+}
+
+bool doStep(Map& map, int steps = 0) {
+    // Create a new rock
+    auto newRock  = map.start;
+
+    bool movement = false;
+    do {
+        // Check down
+        if(movement = placeRock(map, newRock + QPoint(0, 1), true), movement)
+        {
+            newRock += QPoint(0, 1);
+        }
+        // Check left
+        else if(movement = placeRock(map, newRock + QPoint(-1, 1), true), movement)
+        {
+            newRock += QPoint(-1, 1);
+        }
+        // Check right
+        else if(movement = placeRock(map, newRock + QPoint(1, 1), true), movement)
+        {
+            newRock += QPoint(1, 1);
+        }
+
+        // Check if fell of the map
+        if(!map.field.contains(newRock))
+        {
+            return false;
+        }
+    } while(movement && --steps != 0);
+
+    // Should always be true, but informs the user if it's false
+    return placeRock(map, newRock);
+}
+
+Map createMap(QPoint start, QList<QPolygon> rockFormations, QList<QPoint> rocks = QList<QPoint>()) {
     // Get the size of the map
-    QRect map(start, -start);
+    QRect field(start, -start);
     for(const auto& formation: rockFormations)
     {
         auto xLimit = std::ranges::minmax_element(formation.constBegin(), formation.constEnd(), [](const QPoint& a, const QPoint& b) { return a.x() < b.x(); });
         auto yLimit = std::ranges::minmax_element(formation.constBegin(), formation.constEnd(), [](const QPoint& a, const QPoint& b) { return a.y() < b.y(); });
 
-        if(map.x() > xLimit.min->x())
+        if(field.x() > xLimit.min->x())
         {
-            map.setX(xLimit.min->x());
+            field.setX(xLimit.min->x());
         }
-        if(map.y() > yLimit.min->y())
+        if(field.y() > yLimit.min->y())
         {
-            map.setY(yLimit.min->y());
+            field.setY(yLimit.min->y());
         }
-        if(map.right() < xLimit.max->x())
+        if(field.right() < xLimit.max->x())
         {
-            map.setRight(xLimit.max->x());
+            field.setRight(xLimit.max->x());
         }
-        if(map.bottom() < yLimit.max->y())
+        if(field.bottom() < yLimit.max->y())
         {
-            map.setBottom(yLimit.max->y());
+            field.setBottom(yLimit.max->y());
         }
     }
 
     // Create a map with air
-    QList<QList<char>> mapData(map.width(), QList<char>(map.height(), '.'));
+    QList<QList<char>> mapData(field.width(), QList<char>(field.height(), '.'));
 
     // Draw the start
-    mapData[start.y() - map.y()][start.x() - map.x()] = '+';
-    
+    mapData[start.y() - field.y()][start.x() - field.x()] = '+';
 
     // Draw the formations in the map
     for(const auto& formation: rockFormations)
@@ -64,20 +151,36 @@ void drawMap(QList<QPolygon> rockFormations, QPoint start) {
             }
 
             // Mark all the points between start and end
-            auto pointCount = (*pointIt - (*std::next(pointIt))).manhattanLength();
+            auto pointCount = (*pointIt - (*std::next(pointIt))).manhattanLength() + 1;
             for(int i = 0; i < pointCount; i++)
             {
-                int y = (*pointIt).y() - map.y() + (i * yDirection);
-                int x = (*pointIt).x() - map.x() + (i * xDirection);
-
                 // Set data
-                mapData[(*pointIt).y() - map.y() + (i * yDirection)][(*pointIt).x() - map.x() + (i * xDirection)] = '#';
+                mapData[(*pointIt).y() - field.y() + (i * yDirection)][(*pointIt).x() - field.x() + (i * xDirection)] = '#';
             }
         }
     }
 
+    // Place the rocks
+    for(const auto& rock: rocks)
+    {
+        // Sanity check
+        if(mapData[rock.y() - field.y()][rock.x() - field.x()] == '#')
+        {
+            qWarning() << "Rock placed on top of a wall!";
+            mapData[rock.y() - field.y()][rock.x() - field.x()] = '8';
+        }
+        else
+        {
+            mapData[rock.y() - field.y()][rock.x() - field.x()] = 'O';
+        }
+    }
+
+    return {start, field, mapData};
+}
+
+void drawMap(Map map) {
     // Print map
-    for(const auto& line: mapData)
+    for(const auto& line: map.mapData)
     {
         QString mapString;
         for(const auto& point: line)
@@ -133,6 +236,12 @@ int main(int argc, char* argv[]) {
     }
 
 
-    drawMap(rockFormations, {500, 0});
+    auto map = createMap({500, 0}, rockFormations);
+    for(int i = 0; i < 25; i++)
+    {
+        qDebug() << doStep(map, map.maxSteps());
+        drawMap(map);
+    }
+
     return 0;
 }
