@@ -25,8 +25,8 @@ bool placeRock(Map& map, QPoint rock, bool testOnly = false) {
         if(!testOnly)
         {
             qWarning() << "Rock falls of map!";
-            return true;
         }
+        return true;
     }
 
     auto& current = mapData[rock.y() - field.y()][rock.x() - field.x()];
@@ -86,6 +86,7 @@ bool doStep(Map& map, int steps = 0) {
         {
             return false;
         }
+
     } while(movement && --steps != 0);
 
     // Should always be true, but informs the user if it's false
@@ -237,11 +238,17 @@ int main(int argc, char* argv[]) {
 
 
     auto map = createMap({500, 0}, rockFormations);
-    for(int i = 0; i < 25; i++)
+    int  steps = 0;
+    while(doStep(map, map.maxSteps()))
     {
-        qDebug() << doStep(map, map.maxSteps());
-        drawMap(map);
+        //drawMap(map);
+        steps++;
     }
+
+    qDebug() << "\nFinal result:";
+    drawMap(map);
+
+    qDebug() << "The map is full in" << steps << "steps";
 
     return 0;
 }
