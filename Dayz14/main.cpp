@@ -120,7 +120,7 @@ Map createMap(QPoint start, QList<QPolygon> rockFormations, QList<QPoint> rocks 
     }
 
     // Create a map with air
-    QList<QList<char>> mapData(field.width(), QList<char>(field.height(), '.'));
+    QList<QList<char>> mapData(field.height(), QList<char>(field.width(), '.'));
 
     // Draw the start
     mapData[start.y() - field.y()][start.x() - field.x()] = '+';
@@ -155,8 +155,11 @@ Map createMap(QPoint start, QList<QPolygon> rockFormations, QList<QPoint> rocks 
             auto pointCount = (*pointIt - (*std::next(pointIt))).manhattanLength() + 1;
             for(int i = 0; i < pointCount; i++)
             {
-                // Set data
-                mapData[(*pointIt).y() - field.y() + (i * yDirection)][(*pointIt).x() - field.x() + (i * xDirection)] = '#';
+                auto y = (*pointIt).y() - field.y() + (i * yDirection);
+                auto x = (*pointIt).x() - field.x() + (i * xDirection);
+
+                // Set 
+                mapData[y][x] = '#';
             }
         }
     }
@@ -195,8 +198,8 @@ void drawMap(Map map) {
 
 int main(int argc, char* argv[]) {
     // Get input file
-    // QFile inputFile = QFile("input.txt");
-    QFile inputFile = QFile("testInput.txt");
+    QFile inputFile = QFile("input.txt");
+    //QFile inputFile = QFile("testInput.txt");
     if(!inputFile.open(QFile::OpenModeFlag::ReadOnly | QFile::OpenModeFlag::Text))
     {
         qDebug() << "Could not open file";
