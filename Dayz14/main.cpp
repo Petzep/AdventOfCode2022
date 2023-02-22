@@ -4,6 +4,8 @@
 #include <QtCore>
 #include <QtMath>
 
+#define part_2
+
 struct Map {
         QPoint             start;
         QRect              field;
@@ -90,7 +92,10 @@ bool doStep(Map& map, int steps = 0) {
     } while(movement && --steps != 0);
 
     // Should always be true, but informs the user if it's false
-    return placeRock(map, newRock);
+    placeRock(map, newRock);
+
+    // Return false if we are full
+    return (newRock != map.start);
 }
 
 Map createMap(QPoint start, QList<QPolygon> rockFormations, QList<QPoint> rocks = QList<QPoint>()) {
@@ -158,7 +163,7 @@ Map createMap(QPoint start, QList<QPolygon> rockFormations, QList<QPoint> rocks 
                 auto y = (*pointIt).y() - field.y() + (i * yDirection);
                 auto x = (*pointIt).x() - field.x() + (i * xDirection);
 
-                // Set 
+                // Set
                 mapData[y][x] = '#';
             }
         }
@@ -198,8 +203,8 @@ void drawMap(Map map) {
 
 int main(int argc, char* argv[]) {
     // Get input file
-    QFile inputFile = QFile("input.txt");
-    //QFile inputFile = QFile("testInput.txt");
+    // QFile inputFile = QFile("input.txt");
+    QFile inputFile = QFile("testInput.txt");
     if(!inputFile.open(QFile::OpenModeFlag::ReadOnly | QFile::OpenModeFlag::Text))
     {
         qDebug() << "Could not open file";
@@ -239,14 +244,29 @@ int main(int argc, char* argv[]) {
         rockFormations.append(QPolygon(rockPoints));
     }
 
+#ifdef part_2
+    // Find the lowest point
+    auto tempMap    = createMap({500, 0}, rockFormations);
+    auto floorLevel = tempMap.field.bottom() + 2;
 
-    auto map = createMap({500, 0}, rockFormations);
+    // Add a floor
+    int floorSize = tempMap.field.height();
+    rockFormations.append(QPolygon({{tempMap.field.left() - floorSize, floorLevel}, {tempMap.field.right() + floorSize, floorLevel}}));
+#endif
+
+    auto map   = createMap({500, 0}, rockFormations);
+
     int  steps = 0;
     while(doStep(map, map.maxSteps()))
     {
-        //drawMap(map);
+        // drawMap(map);
         steps++;
     }
+
+#ifdef part_2
+    // Don't forget the last grain of sand
+    steps += 1;
+#endif
 
     qDebug() << "\nFinal result:";
     drawMap(map);
