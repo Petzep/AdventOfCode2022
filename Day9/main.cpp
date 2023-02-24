@@ -37,7 +37,7 @@ class Rope {
                         // The tail is still in the same direction as the head
                         if((relativeHead - knot).manhattanLength() > 1)
                         {
-                            // Damn, my old hack works here with the long not but not with the longer instructions
+                            // Damn, my old hack works here with the short rope (n=2) but not with the longer ropes
                             // newKnot = oldPosition;
 
                             if(knot.x() < relativeHead.x())
