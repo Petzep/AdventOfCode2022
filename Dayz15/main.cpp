@@ -111,8 +111,8 @@ void drawMap(Map map) {
 
 int main(int argc, char* argv[]) {
     // Get input file
-    // QFile inputFile = QFile("input.txt");
-    QFile inputFile = QFile("testInput.txt");
+    QFile inputFile = QFile("input.txt");
+    //QFile inputFile = QFile("testInput.txt");
     if(!inputFile.open(QFile::OpenModeFlag::ReadOnly | QFile::OpenModeFlag::Text))
     {
         qDebug() << "Could not open file";
@@ -149,10 +149,10 @@ int main(int argc, char* argv[]) {
     auto map = createMap(sensors);
 
     // Print map
-    drawMap(map);
+    //drawMap(map);
 
     // Get the "No beacon position"-count
-    int targetRow = 10;
+    int  targetRow   = 2000000;
     auto nopeSitions = std::count_if(map.mapData[targetRow - map.field.top()].constBegin(), map.mapData[targetRow - map.field.top()].constEnd(), [](const char x) { return x == '#'; });
     qDebug() << "Found count:" << nopeSitions;
 
