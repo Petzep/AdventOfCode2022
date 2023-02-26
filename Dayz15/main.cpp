@@ -67,7 +67,7 @@ Map createMap(QList<Sensor> sensors) {
     QList<QList<char>> mapData(field.height(), QList<char>(field.width(), '.'));
 
     // Draw the sensor ranges in the map
-    for(const auto& sensor: sensors)
+    /*for(const auto& sensor: sensors)
     {
         for(int y = sensor.y() - sensor.beaconDistance(); y <= sensor.y() + sensor.beaconDistance(); y++)
         {
@@ -79,7 +79,7 @@ Map createMap(QList<Sensor> sensors) {
                 }
             }
         }
-    }
+    }*/
 
     // Draw the sensors and beacons in the map
     for(const auto& sensor: sensors)
@@ -147,6 +147,9 @@ int main(int argc, char* argv[]) {
 
     // Create a map for the sensors
     auto map = createMap(sensors);
+
+    // Print info about the map
+    qDebug() << "Field size:" << map.field.size();
 
     // Print map
     //drawMap(map);
